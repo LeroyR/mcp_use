@@ -23,8 +23,6 @@ from langchain_core.utils.input import get_color_mapping
 
 from mcp_use.client import MCPClient
 from mcp_use.connectors.base import BaseConnector
-from mcp_use.telemetry.telemetry import Telemetry
-from mcp_use.telemetry.utils import extract_model_info
 
 from ..adapters.langchain_adapter import LangChainAdapter
 from ..logging import logger
@@ -96,9 +94,6 @@ class MCPAgent:
         # Create the adapter for tool conversion
         self.adapter = LangChainAdapter(disallowed_tools=self.disallowed_tools)
 
-        # Initialize telemetry
-        self.telemetry = Telemetry()
-
         # Initialize server manager if requested
         self.server_manager = None
         if self.use_server_manager:
@@ -109,9 +104,6 @@ class MCPAgent:
         # State tracking
         self._agent_executor: AgentExecutor | None = None
         self._system_message: SystemMessage | None = None
-
-        # Track model info for telemetry
-        self._model_provider, self._model_name = extract_model_info(self.llm)
 
     async def initialize(self) -> None:
         """Initialize the MCP client and agent."""
@@ -402,28 +394,6 @@ class MCPAgent:
 
             conversation_history_length = len(self._conversation_history) if self.memory_enabled else 0
 
-            self.telemetry.track_agent_execution(
-                execution_method="astream",
-                query=query,
-                success=success,
-                model_provider=self._model_provider,
-                model_name=self._model_name,
-                server_count=server_count,
-                server_identifiers=[connector.public_identifier for connector in self.connectors],
-                total_tools_available=len(self._tools) if self._tools else 0,
-                tools_available_names=[tool.name for tool in self._tools],
-                max_steps_configured=self.max_steps,
-                memory_enabled=self.memory_enabled,
-                use_server_manager=self.use_server_manager,
-                max_steps_used=max_steps,
-                manage_connector=manage_connector,
-                external_history_used=external_history is not None,
-                response=f"[STREAMED RESPONSE - {total_response_length} chars]",
-                execution_time_ms=execution_time_ms,
-                error_type=None if success else "streaming_error",
-                conversation_history_length=conversation_history_length,
-            )
-
     async def run(
         self,
         query: str,
@@ -617,30 +587,6 @@ class MCPAgent:
                 server_count = len(self.connectors)
 
             conversation_history_length = len(self._conversation_history) if self.memory_enabled else 0
-            self.telemetry.track_agent_execution(
-                execution_method="run",
-                query=query,
-                success=success,
-                model_provider=self._model_provider,
-                model_name=self._model_name,
-                server_count=server_count,
-                server_identifiers=[connector.public_identifier for connector in self.connectors],
-                total_tools_available=len(self._tools) if self._tools else 0,
-                tools_available_names=[tool.name for tool in self._tools],
-                max_steps_configured=self.max_steps,
-                memory_enabled=self.memory_enabled,
-                use_server_manager=self.use_server_manager,
-                max_steps_used=max_steps,
-                manage_connector=manage_connector,
-                external_history_used=external_history is not None,
-                steps_taken=steps_taken,
-                tools_used_count=len(tools_used_names),
-                tools_used_names=tools_used_names,
-                response=result,
-                execution_time_ms=execution_time_ms,
-                error_type=None if success else "execution_error",
-                conversation_history_length=conversation_history_length,
-            )
 
             # Clean up if necessary (e.g., if not using client-managed sessions)
             if manage_connector and not self.client and not initialized_here:

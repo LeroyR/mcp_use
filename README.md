@@ -91,17 +91,11 @@
 
 # Quick start
 
-With pip:
+install from source:
 
 ```bash
-pip install mcp-use
-```
-
-Or install from source:
-
-```bash
-git clone https://github.com/pietrozullo/mcp-use.git
-cd mcp-use
+git clone https://github.com/leroyR/mcp_use.git
+cd mcp_use
 pip install -e .
 ```
 
@@ -115,13 +109,6 @@ pip install langchain-openai
 
 # For Anthropic
 pip install langchain-anthropic
-```
-
-For other providers, check the [LangChain chat models documentation](https://python.langchain.com/docs/integrations/chat/) and add your API keys for the provider you want to use to your `.env` file.
-
-```bash
-OPENAI_API_KEY=
-ANTHROPIC_API_KEY=
 ```
 
 > **Important**: Only models with tool calling capabilities can be used with mcp_use. Make sure your chosen model supports function calling or tool use.
@@ -556,96 +543,6 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-# Sandboxed Execution
-
-MCP-Use supports running MCP servers in a sandboxed environment using E2B's cloud infrastructure. This allows you to run MCP servers without having to install dependencies locally, making it easier to use tools that might have complex setups or system requirements.
-
-## Installation
-
-To use sandboxed execution, you need to install the E2B dependency:
-
-```bash
-# Install mcp-use with E2B support
-pip install "mcp-use[e2b]"
-
-# Or install the dependency directly
-pip install e2b-code-interpreter
-```
-
-You'll also need an E2B API key. You can sign up at [e2b.dev](https://e2b.dev) to get your API key.
-
-## Configuration
-
-To enable sandboxed execution, use the sandbox parameter when creating your `MCPClient`:
-
-```python
-import asyncio
-import os
-from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-from mcp_use import MCPAgent, MCPClient
-from mcp_use.types.sandbox import SandboxOptions
-
-async def main():
-    # Load environment variables (needs E2B_API_KEY)
-    load_dotenv()
-
-    # Define MCP server configuration
-    server_config = {
-        "mcpServers": {
-            "everything": {
-                "command": "npx",
-                "args": ["-y", "@modelcontextprotocol/server-everything"],
-            }
-        }
-    }
-
-    # Define sandbox options
-    sandbox_options: SandboxOptions = {
-        "api_key": os.getenv("E2B_API_KEY"),  # API key can also be provided directly
-        "sandbox_template_id": "base",  # Use base template
-    }
-
-    # Create client with sandboxed mode enabled
-    client = MCPClient(
-        config=server_config,
-        sandbox=True,
-        sandbox_options=sandbox_options,
-
-    )
-
-    # Create agent with the sandboxed client
-    llm = ChatOpenAI(model="gpt-4o")
-    agent = MCPAgent(llm=llm, client=client)
-
-    # Run your agent
-    result = await agent.run("Use the command line tools to help me add 1+1")
-    print(result)
-
-    # Clean up
-    await client.close_all_sessions()
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-## Sandbox Options
-
-The `SandboxOptions` type provides configuration for the sandbox environment:
-
-| Option                 | Description                                                                              | Default               |
-| ---------------------- | ---------------------------------------------------------------------------------------- | --------------------- |
-| `api_key`              | E2B API key. Required - can be provided directly or via E2B_API_KEY environment variable | None                  |
-| `sandbox_template_id`  | Template ID for the sandbox environment                                                  | "base"                |
-| `supergateway_command` | Command to run supergateway                                                              | "npx -y supergateway" |
-
-## Benefits of Sandboxed Execution
-
-- **No local dependencies**: Run MCP servers without installing dependencies locally
-- **Isolation**: Execute code in a secure, isolated environment
-- **Consistent environment**: Ensure consistent behavior across different systems
-- **Resource efficiency**: Offload resource-intensive tasks to cloud infrastructure
-
 # Build a Custom Agent:
 
 You can also build your own custom agent using the LangChain adapter:
@@ -736,75 +633,6 @@ agent = MCPAgent(
 ```
 
 This is useful when you only need to see the agent's steps and decision-making process without all the low-level debug information from other components.
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=pietrozullo/mcp-use&type=Date)](https://www.star-history.com/#pietrozullo/mcp-use&Date)
-
-# Contributing
-
-We love contributions! Feel free to open issues for bugs or feature requests. Look at [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## Contributors
-
-Thanks to all our amazing contributors!
-
-<a href="https://github.com/mcp-use/mcp-use/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=mcp-use/mcp-use" />
-</a>
-
-## Top Starred Dependents
-
-<!-- gh-dependents-info-used-by-start -->
-
-<table>
-  <tr>
-    <th width="400">Repository</th>
-    <th>Stars</th>
-  </tr>
-  <tr>
-    <td><img src="https://avatars.githubusercontent.com/u/170207473?s=40&v=4" width="20" height="20" style="vertical-align: middle; margin-right: 8px;"> <a href="https://github.com/tavily-ai/meeting-prep-agent"><strong>tavily-ai/meeting-prep-agent</strong></a></td>
-    <td>⭐ 112</td>
-  </tr>
-  <tr>
-    <td><img src="https://avatars.githubusercontent.com/u/20041231?s=40&v=4" width="20" height="20" style="vertical-align: middle; margin-right: 8px;"> <a href="https://github.com/krishnaik06/MCP-CRASH-Course"><strong>krishnaik06/MCP-CRASH-Course</strong></a></td>
-    <td>⭐ 37</td>
-  </tr>
-  <tr>
-    <td><img src="https://avatars.githubusercontent.com/u/892404?s=40&v=4" width="20" height="20" style="vertical-align: middle; margin-right: 8px;"> <a href="https://github.com/truemagic-coder/solana-agent-app"><strong>truemagic-coder/solana-agent-app</strong></a></td>
-    <td>⭐ 29</td>
-  </tr>
-  <tr>
-    <td><img src="https://avatars.githubusercontent.com/u/8344498?s=40&v=4" width="20" height="20" style="vertical-align: middle; margin-right: 8px;"> <a href="https://github.com/schogini/techietalksai"><strong>schogini/techietalksai</strong></a></td>
-    <td>⭐ 21</td>
-  </tr>
-  <tr>
-    <td><img src="https://avatars.githubusercontent.com/u/201161342?s=40&v=4" width="20" height="20" style="vertical-align: middle; margin-right: 8px;"> <a href="https://github.com/autometa-dev/whatsapp-mcp-voice-agent"><strong>autometa-dev/whatsapp-mcp-voice-agent</strong></a></td>
-    <td>⭐ 18</td>
-  </tr>
-  <tr>
-    <td><img src="https://avatars.githubusercontent.com/u/100749943?s=40&v=4" width="20" height="20" style="vertical-align: middle; margin-right: 8px;"> <a href="https://github.com/Deniscartin/mcp-cli"><strong>Deniscartin/mcp-cli</strong></a></td>
-    <td>⭐ 17</td>
-  </tr>
-  <tr>
-    <td><img src="https://avatars.githubusercontent.com/u/6764390?s=40&v=4" width="20" height="20" style="vertical-align: middle; margin-right: 8px;"> <a href="https://github.com/elastic/genai-workshops"><strong>elastic/genai-workshops</strong></a></td>
-    <td>⭐ 9</td>
-  </tr>
-  <tr>
-    <td><img src="https://avatars.githubusercontent.com/u/6688805?s=40&v=4" width="20" height="20" style="vertical-align: middle; margin-right: 8px;"> <a href="https://github.com/innovaccer/Healthcare-MCP"><strong>innovaccer/Healthcare-MCP</strong></a></td>
-    <td>⭐ 6</td>
-  </tr>
-  <tr>
-    <td><img src="https://avatars.githubusercontent.com/u/205593730?s=40&v=4" width="20" height="20" style="vertical-align: middle; margin-right: 8px;"> <a href="https://github.com/Qingyon-AI/Revornix"><strong>Qingyon-AI/Revornix</strong></a></td>
-    <td>⭐ 5</td>
-  </tr>
-  <tr>
-    <td><img src="https://avatars.githubusercontent.com/u/68845761?s=40&v=4" width="20" height="20" style="vertical-align: middle; margin-right: 8px;"> <a href="https://github.com/entbappy/MCP-Tutorials"><strong>entbappy/MCP-Tutorials</strong></a></td>
-    <td>⭐ 5</td>
-  </tr>
-</table>
-
-<!-- gh-dependents-info-used-by-end -->
 
 # Requirements
 

@@ -7,12 +7,9 @@ This module provides functionality to load MCP configuration from JSON files.
 import json
 from typing import Any
 
-from mcp_use.types.sandbox import SandboxOptions
-
 from .connectors import (
     BaseConnector,
     HttpConnector,
-    SandboxConnector,
     StdioConnector,
     WebSocketConnector,
 )
@@ -34,36 +31,23 @@ def load_config_file(filepath: str) -> dict[str, Any]:
 
 def create_connector_from_config(
     server_config: dict[str, Any],
-    sandbox: bool = False,
-    sandbox_options: SandboxOptions | None = None,
 ) -> BaseConnector:
     """Create a connector based on server configuration.
     This function can be called with just the server_config parameter:
     create_connector_from_config(server_config)
     Args:
         server_config: The server configuration section
-        sandbox: Whether to use sandboxed execution mode for running MCP servers.
-        sandbox_options: Optional sandbox configuration options.
 
     Returns:
         A configured connector instance
     """
 
     # Stdio connector (command-based)
-    if is_stdio_server(server_config) and not sandbox:
+    if is_stdio_server(server_config):
         return StdioConnector(
             command=server_config["command"],
             args=server_config["args"],
             env=server_config.get("env", None),
-        )
-
-    # Sandboxed connector
-    elif is_stdio_server(server_config) and sandbox:
-        return SandboxConnector(
-            command=server_config["command"],
-            args=server_config["args"],
-            env=server_config.get("env", None),
-            e2b_options=sandbox_options,
         )
 
     # HTTP connector

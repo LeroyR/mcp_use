@@ -7,7 +7,6 @@ to MCP tools through existing LangChain adapters.
 
 from importlib.metadata import version
 
-from . import observability
 from .agents.mcpagent import MCPAgent
 from .client import MCPClient
 from .config import load_config_file
@@ -31,7 +30,6 @@ __all__ = [
     "MCP_USE_DEBUG",
     "Logger",
     "set_debug",
-    "observability",
 ]
 
 
